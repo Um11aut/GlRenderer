@@ -23,12 +23,21 @@ Renderer Renderer::create()
 				});
 			}
 		}),
+		.vertexObject = std::make_shared<VertexObject>(VertexObject::WithResultOf{[]() {
+				float vertices[] = {
+					-0.5f, -0.5f,
+					 0.0f,  0.5f,
+					 0.5f, -0.5f
+				};
+			
+				return VertexObject::create(vertices);
+			}})
 	});
 }
 
 Renderer::Renderer(WithResultOf&& res)
 {
-	Renderer other = res.func();
+	Renderer other = std::move(res.func());
 
 	m = std::move(other.m);
 }
@@ -38,10 +47,23 @@ void Renderer::draw()
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	m.shader->use();
+	m.shader->invoke();
+	m.vertexObject->invoke();
+
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+void Renderer::destroy() const
+{
+	spdlog::info("Renderer destructed!");
+	m.vertexObject->destroy();
 }
 
 Renderer::Renderer(Renderer&& other) noexcept
 {
 	m = std::move(other.m);
+}
+
+Renderer::~Renderer()
+{
 }

@@ -24,7 +24,7 @@ public:
 
 	static Shader compile(ShaderModule&& module);
 
-	void use();
+	void invoke() const;
 
 	struct WithResultOf {
 		std::function<Shader()> func;

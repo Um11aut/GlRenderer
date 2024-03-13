@@ -19,6 +19,7 @@ void Window::run_loop()
 Window::~Window()
 {
 	spdlog::info("Window deleted!");
+	m.renderer->destroy();
 	glfwDestroyWindow(m.window);
 }
 
@@ -42,6 +43,6 @@ Window Window::create(WndConstruct&& parameters)
 			Renderer::WithResultOf{[]() {
 				return Renderer::create();
 			}}
-		)
+		),
 	});
 }

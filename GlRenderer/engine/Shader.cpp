@@ -81,7 +81,7 @@ Shader Shader::compile(ShaderModule&& module)
 	return Shader(M{.shaderProgram = shaderProgram});
 }
 
-void Shader::use()
+void Shader::invoke() const
 {
 	glUseProgram(m.shaderProgram);
 }
