@@ -3,13 +3,13 @@
   "spdxVersion": "SPDX-2.2",
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
-  "documentNamespace": "https://spdx.org/spdxdocs/glfw3-x64-windows-3.4-4c787da6-d414-49fc-a188-4a5fd3bf5d5a",
-  "name": "glfw3:x64-windows@3.4 4667d6017e3f7c8ee6de25d50646f8b35d7a03d1361534d40beb2b717a1412f3",
+  "documentNamespace": "https://spdx.org/spdxdocs/glfw3-x64-windows-3.4-71b9344f-7cee-4598-8214-f2bd2c0ded95",
+  "name": "glfw3:x64-windows@3.4 f74850059d2495623f3694c0af1f160cfbe3629683530abba1424ab4c6ecbe9b",
   "creationInfo": {
     "creators": [
       "Tool: vcpkg-8a83681f921b10d86ae626fd833c253f4f8c355b"
     ],
-    "created": "2024-03-12T21:26:22Z"
+    "created": "2024-03-14T09:33:33Z"
   },
   "relationships": [
     {
@@ -48,7 +48,7 @@
       "name": "glfw3",
       "SPDXID": "SPDXRef-port",
       "versionInfo": "3.4",
-      "downloadLocation": "git+https://github.com/Microsoft/vcpkg#ports/glfw3",
+      "downloadLocation": "git+https://github.com/microsoft/vcpkg@fcbaa3b4073da7a24e20e043164075512f027d2d",
       "homepage": "https://github.com/glfw/glfw",
       "licenseConcluded": "Zlib",
       "licenseDeclared": "NOASSERTION",
@@ -59,7 +59,7 @@
     {
       "name": "glfw3:x64-windows",
       "SPDXID": "SPDXRef-binary",
-      "versionInfo": "4667d6017e3f7c8ee6de25d50646f8b35d7a03d1361534d40beb2b717a1412f3",
+      "versionInfo": "f74850059d2495623f3694c0af1f160cfbe3629683530abba1424ab4c6ecbe9b",
       "downloadLocation": "NONE",
       "licenseConcluded": "Zlib",
       "licenseDeclared": "NOASSERTION",
@@ -83,7 +83,7 @@
   ],
   "files": [
     {
-      "fileName": "./C:/Users/askk/vcpkg/ports/glfw3/portfile.cmake",
+      "fileName": "./C:/Users/askk/AppData/Local/vcpkg/registries/git-trees/fcbaa3b4073da7a24e20e043164075512f027d2d/portfile.cmake",
       "SPDXID": "SPDXRef-file-0",
       "checksums": [
         {
@@ -95,7 +95,7 @@
       "copyrightText": "NOASSERTION"
     },
     {
-      "fileName": "./C:/Users/askk/vcpkg/ports/glfw3/vcpkg.json",
+      "fileName": "./C:/Users/askk/AppData/Local/vcpkg/registries/git-trees/fcbaa3b4073da7a24e20e043164075512f027d2d/vcpkg.json",
       "SPDXID": "SPDXRef-file-1",
       "checksums": [
         {

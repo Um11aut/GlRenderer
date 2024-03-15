@@ -4,6 +4,7 @@
         "glfw3",
         "spdlog",
         "glad",
-        "opengl"
+        "opengl",
+        "glm"
     ]
 }

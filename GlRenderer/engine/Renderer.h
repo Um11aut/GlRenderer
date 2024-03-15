@@ -5,19 +5,25 @@
 #include <functional>
 #include "Shader.h"
 #include "VertexObject.h"
+#include "UniformObject.h"
+#include "Gui.h"
 #include <glad/glad.h>
 
 class Renderer {
 private:
 	struct M {
-		std::shared_ptr<Shader> shader;
-		std::shared_ptr<VertexObject> vertexObject;
+		std::unique_ptr<Gui> gui;
+		std::unique_ptr<Shader> shader;
+		std::unique_ptr<VertexObject> vertex_object;
+		std::unique_ptr<UniformObject> uniform_object;
 	} m;
 
 	explicit Renderer(M m) : m(std::move(m)) {}
 
+	template<typename... T>
+	constexpr void invoke(std::unique_ptr<T>&... objects);
 public:
-	static Renderer create();
+	static Renderer create(GLFWwindow* window);
 
 	struct WithResultOf {
 		std::function<Renderer()> func;

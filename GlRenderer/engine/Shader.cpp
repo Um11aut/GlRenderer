@@ -2,7 +2,6 @@
 #include <spdlog/spdlog.h>
 #include <format>
 
-
 std::optional<std::string> Shader::open(const char* shaderPath)
 {
 	std::ifstream file;

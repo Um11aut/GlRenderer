@@ -9,10 +9,12 @@ class Window {
 private:
 	struct M {
 		GLFWwindow* window;
-		std::shared_ptr<Renderer> renderer;
+		std::unique_ptr<Renderer> renderer;
 	} m;
 
 	explicit Window(M m) : m(std::move(m)) {}
+
+	static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 public:
 	struct WndConstruct {
 		uint32_t width;

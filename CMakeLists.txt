@@ -7,7 +7,4 @@ endif()
 
 project ("GlRenderer")
 
-# Включите подпроекты.
 add_subdirectory ("GlRenderer")
-
-

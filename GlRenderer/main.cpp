@@ -10,7 +10,7 @@ int main() {
 		.width = 800,
 		.height = 600,
 		.name = "Hello!"
-		});
+	});
 
 	window.run_loop();
 }

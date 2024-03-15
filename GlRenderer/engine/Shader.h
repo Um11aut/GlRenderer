@@ -26,6 +26,8 @@ public:
 
 	void invoke() const;
 
+	inline const uint32_t get_program() const& { return m.shaderProgram; }
+
 	struct WithResultOf {
 		std::function<Shader()> func;
 	};
