@@ -1,6 +1,11 @@
 #include "Renderer.h"
 #include <spdlog/spdlog.h>
 
+void Renderer::framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
 Renderer Renderer::create(GLFWwindow* window)
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -15,6 +20,7 @@ Renderer Renderer::create(GLFWwindow* window)
 	const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 	spdlog::info("Loaded OpenGL with version: " + std::string(version));
 
+    glEnable(GL_MULTISAMPLE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glDepthMask(GL_TRUE);
@@ -57,11 +63,27 @@ Renderer Renderer::create(GLFWwindow* window)
         -1.0f, 1.0f, 1.0f,
         1.0f,-1.0f, 1.0f
     };
+    std::unique_ptr<Camera> camera = std::make_unique<Camera>(Camera::WithResultOf{
+        []() {
+            return Camera::create();
+        }
+    });
+
     std::unique_ptr<Gui> gui = std::make_unique<Gui>(Gui::WithResultOf{
         [&]() {
             return Gui::create(window);
          }
     });
+
+    std::unique_ptr<FrameBuffer> frame_buffer = std::make_unique<FrameBuffer>(FrameBuffer::WithResultOf{
+        [&]() {
+            int w, h;
+            glfwGetWindowSize(window, &w, &h);
+
+            return FrameBuffer::create(w, h);
+         }
+    });
+
 
     std::unique_ptr<Shader> shader = std::make_unique<Shader>(Shader::WithResultOf{ 
         []() {
@@ -79,18 +101,26 @@ Renderer Renderer::create(GLFWwindow* window)
     });
 
     std::unique_ptr<UniformObject> uniform_object = std::make_unique<UniformObject>(UniformObject::WithResultOf{
-        [&shader]() {
-            return UniformObject::create(shader->get_program(), 0);
+        [&shader, &camera]() {
+            return UniformObject::create(UniformObject::Parameters{
+                camera,
+                shader->get_program(),
+                0
+            });
         }
     });
 
 	return Renderer(M{
+        std::move(camera),
+        std::move(frame_buffer),
         std::move(gui),
 		std::move(shader),
         std::move(vertex_object),
         std::move(uniform_object)
 	});
 }
+
+
 template<typename ...T>
 inline constexpr void Renderer::invoke(std::unique_ptr<T>&... objects)
 {
@@ -108,13 +138,20 @@ void Renderer::draw()
 {
     m.gui->invoke_start();
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    m.frame_buffer->invoke();
+
+    glClearColor(0.2f, 0.2f, 0.2f, 0.2f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     invoke(
-        m.shader, 
-        m.vertex_object, 
+        m.shader,
+        m.vertex_object,
         m.uniform_object
     );
+
+    m.gui->render_scene(m.frame_buffer->get_texture(), m.camera);
+
+    FrameBuffer::revoke();
 
     m.gui->invoke_end();
 

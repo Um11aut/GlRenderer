@@ -24,16 +24,13 @@ Window::~Window()
 	glfwDestroyWindow(m.window);
 }
 
-void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	glViewport(0, 0, width, height);
-}
 
 Window Window::create(WndConstruct&& parameters)
 {
 	glfwInit();
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
 
 	GLFWwindow* window = glfwCreateWindow(
 		parameters.width,
@@ -44,7 +41,6 @@ Window Window::create(WndConstruct&& parameters)
 	);
 
 	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	return Window(M{
 		.window = std::move(window),

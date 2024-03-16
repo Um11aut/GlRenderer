@@ -2,18 +2,20 @@
 
 #include <glad/glad.h>
 #include <string>
+#include <memory>
 #include <functional>
 #include <glm/glm.hpp>
 #include <glm/matrix.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "external/Camera.h"
 	
 class UniformObject {
 private:
 	struct MVP {
 		glm::mat4 model;
 		glm::mat4 view;
-		glm::mat4 proj;
+		std::shared_ptr<glm::mat4> proj;
 	};
 
 	struct M {
@@ -25,9 +27,15 @@ private:
 	explicit UniformObject(M m) : m(std::move(m)) {}
 
 public:
-	static UniformObject create(const uint32_t& program, const uint32_t& binding);
+	struct Parameters {
+		std::unique_ptr<Camera>& camera;
+		const uint32_t& program;
+		const uint32_t& binding;
+	};
 
-	void invoke() const;
+	static UniformObject create(Parameters&& parameters);
+
+	void invoke();
 	void destroy() const;
 
 	struct WithResultOf {
