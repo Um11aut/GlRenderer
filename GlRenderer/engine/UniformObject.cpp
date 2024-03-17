@@ -2,14 +2,9 @@
 
 UniformObject UniformObject::create(Parameters&& p)
 {
-	glm::mat4 view = glm::lookAt(
-		glm::vec3(4, 3, 3), // Camera is at (4,3,3), in World Space
-		glm::vec3(0, 0, 0), // and looks at the origin
-		glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
-	);
-
     std::shared_ptr<glm::mat4> proj = p.camera->get_proj();
-	
+    std::shared_ptr<glm::mat4> view = p.camera->get_view();
+
 	glm::mat4 model(1.0f);
 
     GLuint ubo;
@@ -24,8 +19,8 @@ UniformObject UniformObject::create(Parameters&& p)
     // Send the MVP matrices to the buffer
     glBindBuffer(GL_UNIFORM_BUFFER, ubo);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(model)); // Model matrix
-    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view)); // View matrix
-    glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(*proj)); // Projection matrix
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), view.get()); // View matrix
+    glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::mat4), proj.get()); // Projection matrix
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     GLuint blockIndex = glGetUniformBlockIndex(p.program, "MVP");
@@ -51,7 +46,7 @@ void UniformObject::invoke()
     glBindBuffer(GL_UNIFORM_BUFFER, m.UBO);
 
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(model)); // Model matrix
-    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(m.mvp.view)); // View matrix
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), m.mvp.view.get()); // View matrix
     glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::mat4), m.mvp.proj.get()); // Projection matrix
 
     // Unbind the buffer object

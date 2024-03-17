@@ -71,7 +71,7 @@ Renderer Renderer::create(GLFWwindow* window)
 
     std::unique_ptr<Gui> gui = std::make_unique<Gui>(Gui::WithResultOf{
         [&]() {
-            return Gui::create(window);
+            return Gui::create(window, camera);
          }
     });
 

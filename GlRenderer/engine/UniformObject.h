@@ -14,7 +14,7 @@ class UniformObject {
 private:
 	struct MVP {
 		glm::mat4 model;
-		glm::mat4 view;
+		std::shared_ptr<glm::mat4> view;
 		std::shared_ptr<glm::mat4> proj;
 	};
 
