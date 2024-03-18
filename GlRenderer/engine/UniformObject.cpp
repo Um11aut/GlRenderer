@@ -5,8 +5,6 @@ UniformObject UniformObject::create(Parameters&& p)
     std::shared_ptr<glm::mat4> proj = p.camera->get_proj();
     std::shared_ptr<glm::mat4> view = p.camera->get_view();
 
-	glm::mat4 model(1.0f);
-
     GLuint ubo;
     glGenBuffers(1, &ubo);
     glBindBuffer(GL_UNIFORM_BUFFER, ubo);
@@ -18,7 +16,7 @@ UniformObject UniformObject::create(Parameters&& p)
 
     // Send the MVP matrices to the buffer
     glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(model)); // Model matrix
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), p.model.get()); // Model matrix
     glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), view.get()); // View matrix
     glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::mat4), proj.get()); // Projection matrix
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -29,28 +27,34 @@ UniformObject UniformObject::create(Parameters&& p)
     return UniformObject(M{
         ubo,
         p.program,
-        {model, view, proj}
+        p.binding,
+        {p.model, view, proj},
+        {*p.model, *view, *proj}
     });
 }
 
 void UniformObject::invoke()
 {
-    // Calculate rotation angle based on time or any other parameter
-    static float angle = 0.0f;
-    angle += 0.01f; // Adjust rotation speed as needed
-
-    // Update model matrix with rotation transformation
-    glm::mat4 model = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
-
     // Bind the buffer object
-    glBindBuffer(GL_UNIFORM_BUFFER, m.UBO);
+    glBindBufferBase(GL_UNIFORM_BUFFER, m.binding, m.UBO);
+}
 
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(model)); // Model matrix
-    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), m.mvp.view.get()); // View matrix
-    glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::mat4), m.mvp.proj.get()); // Projection matrix
+void UniformObject::update()
+{
+    if(m.mvp_copy != m.mvp) {
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), m.mvp.model.get()); // Model matrix
+        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), m.mvp.view.get()); // View matrix
+        glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::mat4), m.mvp.proj.get()); // Projection matrix
+    
+        m.mvp_copy.model = *m.mvp.model;
+        m.mvp_copy.view = *m.mvp.view;
+        m.mvp_copy.proj = *m.mvp.proj;
+    }
+}
 
-    // Unbind the buffer object
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+void UniformObject::revoke()
+{
+    glBindBufferBase(GL_UNIFORM_BUFFER, m.binding, 0);
 }
 
 UniformObject::UniformObject(WithResultOf&& res) noexcept

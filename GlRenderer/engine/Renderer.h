@@ -14,6 +14,7 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_internal.h>
 #include "gui/SceneViewport.h"
+#include "Model.h"
 
 class Renderer {
 private:
@@ -21,9 +22,7 @@ private:
 		std::unique_ptr<Camera> camera;
 		std::unique_ptr<FrameBuffer> frame_buffer;
 		std::unique_ptr<Gui> gui;
-		std::unique_ptr<Shader> shader;
-		std::unique_ptr<VertexObject> vertex_object;
-		std::unique_ptr<UniformObject> uniform_object;
+		std::vector<std::unique_ptr<Model>> models;
 	} m;
 
 	explicit Renderer(M m) : m(std::move(m)) {}

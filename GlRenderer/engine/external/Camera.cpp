@@ -97,16 +97,16 @@ void Camera::rotate_camera(double& x_offset, double& y_offset)
 	x_offset *= m.camera_controls->viewSensitivity * delta_time;
 	y_offset *= m.camera_controls->viewSensitivity * delta_time;
 
-	m.camera_controls->yaw -= x_offset;
-	m.camera_controls->pitch += y_offset;
+	m.camera_controls->yaw -= static_cast<float>(x_offset);
+	m.camera_controls->pitch += static_cast<float>(y_offset);
 
 	if (m.camera_controls->pitch > 89.f) m.camera_controls->pitch = 89.f;
 	if (m.camera_controls->pitch < -89.0f) m.camera_controls->pitch = -89.0f;
 
 	glm::vec3 front;
-	front.x = cos(glm::radians(m.camera_controls->yaw)) * cos(glm::radians(m.camera_controls->pitch));
-	front.y = sin(glm::radians(m.camera_controls->pitch));
-	front.z = sin(glm::radians(m.camera_controls->yaw)) * cos(glm::radians(m.camera_controls->pitch));
+	front.x = glm::cos(glm::radians(m.camera_controls->yaw)) * glm::cos(glm::radians(m.camera_controls->pitch));
+	front.y = glm::sin(glm::radians(m.camera_controls->pitch));
+	front.z = glm::sin(glm::radians(m.camera_controls->yaw)) * glm::cos(glm::radians(m.camera_controls->pitch));
 	m.view_controls->cameraFront = glm::normalize(front);
 
 	update_view();

@@ -25,44 +25,6 @@ Renderer Renderer::create(GLFWwindow* window)
     glDepthFunc(GL_LESS);
     glDepthMask(GL_TRUE);
 
-    const float vertices[] = {
-        -1.0f,-1.0f,-1.0f, // triangle 1 : begin
-        -1.0f,-1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f, // triangle 1 : end
-        1.0f, 1.0f,-1.0f, // triangle 2 : begin
-        -1.0f,-1.0f,-1.0f,
-        -1.0f, 1.0f,-1.0f, // triangle 2 : end
-        1.0f,-1.0f, 1.0f,
-        -1.0f,-1.0f,-1.0f,
-        1.0f,-1.0f,-1.0f,
-        1.0f, 1.0f,-1.0f,
-        1.0f,-1.0f,-1.0f,
-        -1.0f,-1.0f,-1.0f,
-        -1.0f,-1.0f,-1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f,-1.0f,
-        1.0f,-1.0f, 1.0f,
-        -1.0f,-1.0f, 1.0f,
-        -1.0f,-1.0f,-1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f,-1.0f, 1.0f,
-        1.0f,-1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f,-1.0f,-1.0f,
-        1.0f, 1.0f,-1.0f,
-        1.0f,-1.0f,-1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f,-1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f,-1.0f,
-        -1.0f, 1.0f,-1.0f,
-        1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f,-1.0f,
-        -1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, 1.0f,
-        1.0f,-1.0f, 1.0f
-    };
     std::unique_ptr<Camera> camera = std::make_unique<Camera>(Camera::WithResultOf{
         []() {
             return Camera::create();
@@ -85,38 +47,24 @@ Renderer Renderer::create(GLFWwindow* window)
     });
 
 
-    std::unique_ptr<Shader> shader = std::make_unique<Shader>(Shader::WithResultOf{ 
-        []() {
-            return Shader::compile(Shader::ShaderModule{
-                .vertexPath = "resources/vertex.vert",
-                .fragmentPath = "resources/fragment.frag"
-            });
-         }
-    });
+    std::vector<std::unique_ptr<Model>> models;
 
-    std::unique_ptr<VertexObject> vertex_object = std::make_unique<VertexObject>(VertexObject::WithResultOf{ 
-        [&vertices]() {
-            return VertexObject::create(vertices, sizeof(vertices) / sizeof(vertices[0]));
-        }
-    });
+    models.emplace_back(std::make_unique<Model>(Model::WithResultOf([&camera](){
+        return Model::create(camera);
+    })));
 
-    std::unique_ptr<UniformObject> uniform_object = std::make_unique<UniformObject>(UniformObject::WithResultOf{
-        [&shader, &camera]() {
-            return UniformObject::create(UniformObject::Parameters{
-                camera,
-                shader->get_program(),
-                0
-            });
-        }
-    });
+    models.emplace_back(std::make_unique<Model>(Model::WithResultOf([&camera](){
+        return Model::create(camera);
+    })));
+
+    models[0]->set_position({ 10,10,10 });
+    models[1]->set_position({100,2,3});
 
 	return Renderer(M{
         std::move(camera),
         std::move(frame_buffer),
         std::move(gui),
-		std::move(shader),
-        std::move(vertex_object),
-        std::move(uniform_object)
+        std::move(models)
 	});
 }
 
@@ -143,11 +91,9 @@ void Renderer::draw()
     glClearColor(0.2f, 0.2f, 0.2f, 0.2f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    invoke(
-        m.shader,
-        m.vertex_object,
-        m.uniform_object
-    );
+    for(const auto& model : m.models) {
+        model->invoke();
+    }
 
     m.gui->render_scene(m.frame_buffer->get_texture(), m.camera);
 
@@ -161,7 +107,12 @@ void Renderer::draw()
 void Renderer::destroy() const
 {
 	spdlog::info("Renderer destructed!");
-	m.vertex_object->destroy();
+	
+    for(const auto& model : m.models) {
+        model->destroy();
+        spdlog::info("Destructing model!");
+    }
+
     m.gui->destroy();
 }
 

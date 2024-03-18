@@ -12,7 +12,6 @@ VertexObject VertexObject::create(const float vertices[], uint32_t vertices_coun
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, vertices_count * sizeof(float), vertices, GL_STATIC_DRAW);
 
-    // Assuming each vertex has 3 components (x, y, z)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
 

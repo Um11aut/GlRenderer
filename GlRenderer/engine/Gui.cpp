@@ -64,8 +64,8 @@ void AppDockSpace(bool* p_open)
     ImGui::End();
 }
 
-bool g_mouseCaptured = false;
-ImVec2 g_viewport_size;
+static bool g_mouseCaptured = false;
+static ImVec2 g_viewport_size;
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
     if (ImGui::GetCurrentContext() && ImGui::GetIO().WantCaptureMouse)
@@ -78,10 +78,10 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
     }
     else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS && !g_mouseCaptured) {
         // Capture mouse
+        glfwSetCursorPos(window, g_viewport_size.x / 2.0f, g_viewport_size.y / 2.0f);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         g_mouseCaptured = true;
     }
-    glfwSetCursorPos(window, g_viewport_size.x / 2.0f, g_viewport_size.y / 2.0f);
 }
 
 static void mouse_move_callback(GLFWwindow* window, double xpos, double ypos) {
@@ -89,12 +89,12 @@ static void mouse_move_callback(GLFWwindow* window, double xpos, double ypos) {
         return;
     }
 
+    glfwSetCursorPos(window, g_viewport_size.x / 2.0f, g_viewport_size.y / 2.0f);
+
     Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
 
     double xOffset = g_viewport_size.x / 2.0f - xpos;
     double yOffset = g_viewport_size.y / 2.0f - ypos;
-
-    glfwSetCursorPos(window, g_viewport_size.x / 2.0f, g_viewport_size.y / 2.0f);
 
     camera->rotate_camera(xOffset, yOffset);
 }
@@ -136,6 +136,10 @@ void Gui::draw_camera_controls_window() const
     ImGui::SliderFloat("Camera Speed", &m.camera_view_controls->movementSpeed, 0.1f, 5.0f);
     ImGui::SliderFloat("Camera Sensitivity", &m.camera_view_controls->viewSensitivity, 0.01f, 0.3f);
     ImGui::SliderFloat("FOV", &m.camera_proj_controls->fov, 30.f, 120.f);
+    if (ImGui::IsItemEdited()) {
+        Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(m.window));
+        camera->update_projection(g_viewport_size);
+    }
     ImGui::SliderFloat("Render Distance", &m.camera_proj_controls->farPlane, 100.f, 500.f);
     if (ImGui::IsItemEdited()) {
         Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(m.window));
