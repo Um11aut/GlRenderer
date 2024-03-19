@@ -33,9 +33,7 @@ ImVec2 SceneViewport::draw_window_scene(ImTextureID draw_texture_id)
 
     ImGui::Image(
         draw_texture_id,
-        ImVec2(width, height),
-        ImVec2(0, 1),
-        ImVec2(1, 0)
+        ImVec2(width, height)
     );
 
     ImGui::EndChild();

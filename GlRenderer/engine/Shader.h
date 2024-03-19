@@ -23,6 +23,7 @@ public:
 	};
 
 	static Shader compile(ShaderModule&& module);
+	static Shader compile_single(const char* module, GLenum shader_type);
 
 	void invoke() const;
 

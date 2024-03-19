@@ -1,5 +1,8 @@
 #include "Model.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 Model Model::create(std::unique_ptr<Camera>& camera) 
 {
     const float vertices[] = {

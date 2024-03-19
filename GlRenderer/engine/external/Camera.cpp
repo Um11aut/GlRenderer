@@ -37,6 +37,7 @@ Camera Camera::create()
 	CameraControls cam_controls{
 		.movementSpeed = 0.5f,
 		.viewSensitivity = 0.1f,
+		.cameraAcceleration = 0.1f,
 		.yaw = -90.f,
 		.pitch = 0.f,
 	};
@@ -68,27 +69,57 @@ void Camera::update_view()
 
 void Camera::process_input(GLFWwindow* window)
 {
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		auto delta_time = ImGui::GetIO().DeltaTime * 100.f;
-		m.view_controls->cameraPosition += m.camera_controls->movementSpeed * m.view_controls->cameraFront * delta_time;
-		update_view();
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		auto delta_time = ImGui::GetIO().DeltaTime * 100.f;
-		m.view_controls->cameraPosition -= m.camera_controls->movementSpeed * m.view_controls->cameraFront * delta_time;
-		update_view();
-	}
+    static bool accelerating = false;
+    static float acceleration = 0.0f;
+    static glm::vec3 last_direction = glm::vec3(0.0f);
 
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		auto delta_time = ImGui::GetIO().DeltaTime * 100.f;
-		m.view_controls->cameraPosition -= glm::normalize(glm::cross(m.view_controls->cameraFront, m.view_controls->cameraUp)) * m.camera_controls->movementSpeed * delta_time;
-		update_view();
-	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		auto delta_time = ImGui::GetIO().DeltaTime * 100.f;
-		m.view_controls->cameraPosition += glm::normalize(glm::cross(m.view_controls->cameraFront, m.view_controls->cameraUp)) * m.camera_controls->movementSpeed * delta_time;
-		update_view();
-	}
+    // Check if any movement key is pressed
+    bool any_movement_key_pressed = (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) ||
+                                    (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) ||
+                                    (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) ||
+                                    (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS);
+
+    // Calculate acceleration
+    if (any_movement_key_pressed) {
+        accelerating = true;
+        acceleration = std::min(acceleration + m.camera_controls->cameraAcceleration, 1.0f); // Accelerate
+    } else {
+        accelerating = false;
+        acceleration = std::max(acceleration - m.camera_controls->cameraAcceleration, 0.0f); // Decelerate
+    }
+
+    auto delta_time = ImGui::GetIO().DeltaTime * 100.f;
+
+    // Apply acceleration to movement
+    float smooth_step = acceleration * acceleration * (3 - 2 * acceleration); // Smooth step function
+    float smooth_speed = m.camera_controls->movementSpeed * smooth_step;
+
+    glm::vec3 movement_direction(0.0f);
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        movement_direction += m.view_controls->cameraFront;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        movement_direction -= m.view_controls->cameraFront;
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        movement_direction -= glm::normalize(glm::cross(m.view_controls->cameraFront, m.view_controls->cameraUp));
+    }	
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        movement_direction += glm::normalize(glm::cross(m.view_controls->cameraFront, m.view_controls->cameraUp));
+    }
+
+    // Normalize movement direction if needed
+    if (glm::length(movement_direction) > 0.0f) {
+        movement_direction = glm::normalize(movement_direction);
+    } else {
+        // If no movement keys are pressed, continue moving in the last direction
+        movement_direction = last_direction;
+    }
+
+    m.view_controls->cameraPosition += movement_direction * smooth_speed * delta_time;
+    last_direction = movement_direction;
+
+    update_view();
 }
 
 void Camera::rotate_camera(double& x_offset, double& y_offset)
@@ -98,7 +129,7 @@ void Camera::rotate_camera(double& x_offset, double& y_offset)
 	y_offset *= m.camera_controls->viewSensitivity * delta_time;
 
 	m.camera_controls->yaw -= static_cast<float>(x_offset);
-	m.camera_controls->pitch += static_cast<float>(y_offset);
+	m.camera_controls->pitch -= static_cast<float>(y_offset);
 
 	if (m.camera_controls->pitch > 89.f) m.camera_controls->pitch = 89.f;
 	if (m.camera_controls->pitch < -89.0f) m.camera_controls->pitch = -89.0f;

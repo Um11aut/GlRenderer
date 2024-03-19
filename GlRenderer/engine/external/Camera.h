@@ -26,6 +26,7 @@ public:
 	struct CameraControls {
 		float movementSpeed;
 		float viewSensitivity;
+		float cameraAcceleration;
 		float yaw;
 		float pitch;
 	};

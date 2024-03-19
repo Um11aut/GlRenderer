@@ -20,10 +20,8 @@ Renderer Renderer::create(GLFWwindow* window)
 	const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 	spdlog::info("Loaded OpenGL with version: " + std::string(version));
 
-    glEnable(GL_MULTISAMPLE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-    glDepthMask(GL_TRUE);
 
     std::unique_ptr<Camera> camera = std::make_unique<Camera>(Camera::WithResultOf{
         []() {
@@ -57,8 +55,8 @@ Renderer Renderer::create(GLFWwindow* window)
         return Model::create(camera);
     })));
 
-    models[0]->set_position({ 10,10,10 });
-    models[1]->set_position({100,2,3});
+    models[0]->set_position({ 4, 0, 4 });
+    models[1]->set_position({ 1, 2, 3 });
 
 	return Renderer(M{
         std::move(camera),
@@ -85,10 +83,8 @@ Renderer::Renderer(WithResultOf&& res)
 void Renderer::draw()
 {
     m.gui->invoke_start();
-
     m.frame_buffer->invoke();
 
-    glClearColor(0.2f, 0.2f, 0.2f, 0.2f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for(const auto& model : m.models) {
@@ -97,8 +93,7 @@ void Renderer::draw()
 
     m.gui->render_scene(m.frame_buffer->get_texture(), m.camera);
 
-    FrameBuffer::revoke();
-
+    m.frame_buffer->revoke();
     m.gui->invoke_end();
 
     glfwSwapInterval(1);
@@ -110,10 +105,10 @@ void Renderer::destroy() const
 	
     for(const auto& model : m.models) {
         model->destroy();
-        spdlog::info("Destructing model!");
     }
 
     m.gui->destroy();
+    m.frame_buffer->destroy();
 }
 
 Renderer::Renderer(Renderer&& other) noexcept

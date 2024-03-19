@@ -12,7 +12,7 @@ class Gui {
 private:
 	struct M {
 		GLFWwindow* window;
-		std::shared_ptr<Camera::CameraControls> camera_view_controls;
+		std::shared_ptr<Camera::CameraControls> camera_controls;
 		std::shared_ptr<Camera::ProjectionControls> camera_proj_controls;
 	} m;
 

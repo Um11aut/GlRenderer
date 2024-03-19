@@ -28,8 +28,7 @@ UniformObject UniformObject::create(Parameters&& p)
         ubo,
         p.program,
         p.binding,
-        {p.model, view, proj},
-        {*p.model, *view, *proj}
+        {p.model, view, proj}
     });
 }
 
@@ -41,15 +40,9 @@ void UniformObject::invoke()
 
 void UniformObject::update()
 {
-    if(m.mvp_copy != m.mvp) {
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), m.mvp.model.get()); // Model matrix
-        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), m.mvp.view.get()); // View matrix
-        glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::mat4), m.mvp.proj.get()); // Projection matrix
-    
-        m.mvp_copy.model = *m.mvp.model;
-        m.mvp_copy.view = *m.mvp.view;
-        m.mvp_copy.proj = *m.mvp.proj;
-    }
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), m.mvp.model.get()); // Model matrix
+    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), m.mvp.view.get()); // View matrix
+    glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::mat4), m.mvp.proj.get()); // Projection matrix
 }
 
 void UniformObject::revoke()

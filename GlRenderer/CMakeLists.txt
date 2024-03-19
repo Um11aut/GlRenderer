@@ -3,6 +3,10 @@
 set(IMGUI_SOURCE_DIR "${CMAKE_SOURCE_DIR}/deps/imgui")
 include_directories(${IMGUI_SOURCE_DIR} ${IMGUI_SOURCE_DIR}/backends)
 
+set(STB_SOURCE_DIR "${CMAKE_SOURCE_DIR}/deps/stb")
+include_directories(${STB_SOURCE_DIR})
+link_directories(${STB_SOURCE_DIR})
+
 add_executable(GlRenderer ${SOURCE_FILES} 
 ${IMGUI_SOURCE_DIR}/backends/imgui_impl_glfw.cpp 
 ${IMGUI_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp 

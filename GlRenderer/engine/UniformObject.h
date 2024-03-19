@@ -19,22 +19,11 @@ private:
 		std::shared_ptr<glm::mat4> proj; // controlled by camera
 	};
 
-	struct MVP_copy {
-		glm::mat4 model;
-		glm::mat4 view;
-		glm::mat4 proj;
-
-		bool operator!=(const MVP& other) {
-			return model != *other.model || view != *other.view || proj != *other.proj;
-		}
-	};
-
 	struct M {
 		uint32_t UBO;
 		uint32_t program;
 		uint32_t binding;
 		MVP mvp;
-		MVP_copy mvp_copy; // storing copy of mvp, so it won't update every frame, but it will update if the MVP is changed
 	} m;
 
 	explicit UniformObject(M m) : m(std::move(m)) {}
