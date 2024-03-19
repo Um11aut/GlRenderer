@@ -7,25 +7,28 @@
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
 #include "Shader.h"
+#include <imgui.h>
 
 class FrameBuffer {
 private:
 	struct M {
 		uint32_t fbo_multisampled;
 		uint32_t fbo;
+		uint32_t rbo;
 		uint32_t texture_multisampled;
 		uint32_t texture;
-		uint32_t width;
-		uint32_t height;
+		std::shared_ptr<ImVec2> size;
+		ImVec2 last_size;
 	} m;
 
 	explicit FrameBuffer(M m) : m(std::move(m)) {}
 public:
-	static FrameBuffer create(const uint32_t& width, const uint32_t& height);
+	static FrameBuffer create(std::shared_ptr<ImVec2> size);
 
-	void invoke() const;
+	void invoke();
 	void revoke() const;
 	
+	void resize() const;
 	void destroy() const;
 
 	const uint32_t get_texture() const&;

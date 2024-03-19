@@ -27,10 +27,6 @@ private:
 
 	explicit Renderer(M m) : m(std::move(m)) {}
 
-	void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-
-	template<typename... T>
-	constexpr void invoke(std::unique_ptr<T>&... objects);
 public:
 	static Renderer create(GLFWwindow* window);
 

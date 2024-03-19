@@ -3,7 +3,7 @@
 double m_width;
 double m_height;
 
-ImVec2 SceneViewport::draw_window_scene(ImTextureID draw_texture_id)
+SceneViewport::SceneWindowInfo SceneViewport::draw_window_scene(ImTextureID draw_texture_id)
 {
     ImGuiIO& io = ImGui::GetIO();
     bool isMouseOverViewport = false;
@@ -26,6 +26,8 @@ ImVec2 SceneViewport::draw_window_scene(ImTextureID draw_texture_id)
         ImGui::GetIO().WantCaptureMouse = true; // Capture mouse if it's over the viewport
     }
 
+    ImVec2 window_pos = ImGui::GetWindowPos();
+
     // Your existing rendering code
     ImGui::BeginChild("GameRender");
     float width = ImGui::GetContentRegionAvail().x;
@@ -41,5 +43,8 @@ ImVec2 SceneViewport::draw_window_scene(ImTextureID draw_texture_id)
 
     io.WantCaptureMouse = !isMouseOverViewport;
 
-    return size;
+    return SceneViewport::SceneWindowInfo{
+        .window_pos = window_pos,
+        .window_size = size
+    };
 }

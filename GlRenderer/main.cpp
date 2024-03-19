@@ -9,7 +9,7 @@ int main() {
 	Window window = Window::create({
 		.width = 800,
 		.height = 600,
-		.name = "Hello!"
+		.name = "Main Renderer"
 	});
 
 	window.run_loop();

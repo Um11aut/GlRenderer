@@ -33,6 +33,10 @@ Window Window::create(WndConstruct&& parameters)
 	glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
 	glfwWindowHint(GLFW_DEPTH_BITS, GL_TRUE);
 
+	int numMonitors;
+	GLFWmonitor** monitors = glfwGetMonitors(&numMonitors);
+	GLFWmonitor* monitor = monitors[0];
+
 	GLFWwindow* window = glfwCreateWindow(
 		parameters.width,
 		parameters.height,

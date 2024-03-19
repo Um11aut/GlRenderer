@@ -14,6 +14,7 @@ private:
 		GLFWwindow* window;
 		std::shared_ptr<Camera::CameraControls> camera_controls;
 		std::shared_ptr<Camera::ProjectionControls> camera_proj_controls;
+		std::shared_ptr<ImVec2> scene_viewport_size;
 	} m;
 
 	void draw_camera_controls_window() const;
@@ -25,9 +26,10 @@ public:
 
 	void invoke_start() const;
 
-
 	void invoke_end() const;
 	void destroy() const;
+
+	inline std::shared_ptr<ImVec2> get_scene_viewport_size() const { return m.scene_viewport_size; }
 
 	struct WithResultOf {
 		std::function<Gui()> func;

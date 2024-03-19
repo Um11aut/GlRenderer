@@ -149,7 +149,8 @@ void AppDockSpace(bool* p_open)
 }
 
 static bool g_mouseCaptured = false;
-static ImVec2 g_viewport_size;
+static std::shared_ptr<ImVec2> g_viewport_size;
+static ImVec2 g_viewport_pos;
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
     if (ImGui::GetCurrentContext() && ImGui::GetIO().WantCaptureMouse)
@@ -158,7 +159,7 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
     // Check if the Alt key is pressed (GLFW_MOD_ALT is equivalent to GLFW_MOD_ALT)
     if ((mods & GLFW_MOD_ALT) && button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS && !g_mouseCaptured) {
         // Capture mouse
-        glfwSetCursorPos(window, g_viewport_size.x / 2.0f, g_viewport_size.y / 2.0f);
+        glfwSetCursorPos(window, (g_viewport_size->x + g_viewport_pos.x) / 2.0f, (g_viewport_size->y + g_viewport_pos.y) / 2.0f);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         g_mouseCaptured = true;
     }
@@ -174,12 +175,12 @@ static void mouse_move_callback(GLFWwindow* window, double xpos, double ypos) {
         return;
     }
 
-    glfwSetCursorPos(window, g_viewport_size.x / 2.0f, g_viewport_size.y / 2.0f);
+    glfwSetCursorPos(window, (g_viewport_size->x+ g_viewport_pos.x) / 2.0f, (g_viewport_size->y + g_viewport_pos.y) / 2.0f);
 
     Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
 
-    double xOffset = g_viewport_size.x / 2.0f - xpos;
-    double yOffset = g_viewport_size.y / 2.0f - ypos;
+    double xOffset = (g_viewport_size->x+ g_viewport_pos.x) / 2.0f - xpos;
+    double yOffset = (g_viewport_size->y + g_viewport_pos.y) / 2.0f - ypos;
 
     camera->rotate_camera(xOffset, yOffset);
 }
@@ -189,12 +190,13 @@ Gui Gui::create(GLFWwindow* window, std::unique_ptr<Camera>& camera)
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    io.FontGlobalScale = 1.5f;
-
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+    g_viewport_size = std::make_shared<ImVec2>(1920,1080);
 
     std::shared_ptr<Camera::CameraControls> camera_view_controls = camera->get_camera_controls();
     std::shared_ptr<Camera::ProjectionControls> camera_proj_controls = camera->get_proj_controls();
+    std::shared_ptr<ImVec2> scene_viewport_size = g_viewport_size;
 
     embraceTheDarkness();
 
@@ -205,7 +207,7 @@ Gui Gui::create(GLFWwindow* window, std::unique_ptr<Camera>& camera)
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 460");
-    return Gui(M{ window, camera_view_controls, camera_proj_controls });
+    return Gui(M{ window, camera_view_controls, camera_proj_controls, scene_viewport_size });
 }
 
 void Gui::invoke_start() const
@@ -228,12 +230,12 @@ void Gui::draw_camera_controls_window() const
     ImGui::SliderFloat("FOV", &m.camera_proj_controls->fov, 30.f, 120.f);
     if (ImGui::IsItemEdited()) {
         Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(m.window));
-        camera->update_projection(g_viewport_size);
+        camera->update_projection(*g_viewport_size);
     }
     ImGui::SliderFloat("Render Distance", &m.camera_proj_controls->farPlane, 100.f, 500.f);
     if (ImGui::IsItemEdited()) {
         Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(m.window));
-        camera->update_projection(g_viewport_size);
+        camera->update_projection(*g_viewport_size);
     }
     ImGui::SliderFloat("Camera Acceleration", &m.camera_controls->cameraAcceleration, 0.05f, 0.3f);
     ImGui::End();
@@ -241,13 +243,17 @@ void Gui::draw_camera_controls_window() const
 
 void Gui::render_scene(const uint32_t framebuffer_texture, std::unique_ptr<Camera>& camera) const
 {
-    ImVec2 window_size = SceneViewport::draw_window_scene(reinterpret_cast<ImTextureID>(framebuffer_texture));
+    SceneViewport::SceneWindowInfo info = SceneViewport::draw_window_scene(reinterpret_cast<ImTextureID>(framebuffer_texture));
 
-    if (window_size.x != g_viewport_size.x || window_size.y != g_viewport_size.y) {
-        camera->update_projection(window_size);
-        g_viewport_size.x = window_size.x;
-        g_viewport_size.y = window_size.y;
-        spdlog::info("{} {}", g_viewport_size.x, g_viewport_size.y);
+    if (info.window_size.x != g_viewport_size->x || info.window_size.y != g_viewport_size->y) {
+        camera->update_projection(info.window_size);
+        g_viewport_size->x = info.window_size.x;
+        g_viewport_size->y = info.window_size.y;
+
+        g_viewport_pos.x = info.window_pos.x;
+        g_viewport_pos.y = info.window_pos.y;
+
+        spdlog::info("{} {}", g_viewport_size->x, g_viewport_size->y);
     }
 
     if (g_mouseCaptured) {

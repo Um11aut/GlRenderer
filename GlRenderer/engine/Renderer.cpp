@@ -1,10 +1,6 @@
 #include "Renderer.h"
 #include <spdlog/spdlog.h>
 
-void Renderer::framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    glViewport(0, 0, width, height);
-}
 
 Renderer Renderer::create(GLFWwindow* window)
 {
@@ -36,14 +32,11 @@ Renderer Renderer::create(GLFWwindow* window)
     });
 
     std::unique_ptr<FrameBuffer> frame_buffer = std::make_unique<FrameBuffer>(FrameBuffer::WithResultOf{
-        [&]() {
-            int w, h;
-            glfwGetWindowSize(window, &w, &h);
-
-            return FrameBuffer::create(w, h);
+        [&gui]() {
+            spdlog::info("Created with size: {} {}", gui->get_scene_viewport_size()->x, gui->get_scene_viewport_size()->y);
+            return FrameBuffer::create(gui->get_scene_viewport_size());
          }
     });
-
 
     std::vector<std::unique_ptr<Model>> models;
 
@@ -55,8 +48,18 @@ Renderer Renderer::create(GLFWwindow* window)
         return Model::create(camera);
     })));
 
+    models.emplace_back(std::make_unique<Model>(Model::WithResultOf([&camera](){
+        return Model::create(camera);
+    })));
+
+    models.emplace_back(std::make_unique<Model>(Model::WithResultOf([&camera](){
+        return Model::create(camera);
+    })));
+
     models[0]->set_position({ 4, 0, 4 });
     models[1]->set_position({ 1, 2, 3 });
+    models[2]->set_position({ 1, 6, 3 });
+    models[3]->set_position({ 1, 15, 9 });
 
 	return Renderer(M{
         std::move(camera),
@@ -64,13 +67,6 @@ Renderer Renderer::create(GLFWwindow* window)
         std::move(gui),
         std::move(models)
 	});
-}
-
-
-template<typename ...T>
-inline constexpr void Renderer::invoke(std::unique_ptr<T>&... objects)
-{
-    (objects->invoke(), ...);
 }
 
 Renderer::Renderer(WithResultOf&& res)
@@ -83,6 +79,7 @@ Renderer::Renderer(WithResultOf&& res)
 void Renderer::draw()
 {
     m.gui->invoke_start();
+
     m.frame_buffer->invoke();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
