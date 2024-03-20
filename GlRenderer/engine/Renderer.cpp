@@ -41,25 +41,8 @@ Renderer Renderer::create(GLFWwindow* window)
     std::vector<std::unique_ptr<Model>> models;
 
     models.emplace_back(std::make_unique<Model>(Model::WithResultOf([&camera](){
-        return Model::create(camera);
+        return Model::create(camera, "Cube");
     })));
-
-    models.emplace_back(std::make_unique<Model>(Model::WithResultOf([&camera](){
-        return Model::create(camera);
-    })));
-
-    models.emplace_back(std::make_unique<Model>(Model::WithResultOf([&camera](){
-        return Model::create(camera);
-    })));
-
-    models.emplace_back(std::make_unique<Model>(Model::WithResultOf([&camera](){
-        return Model::create(camera);
-    })));
-
-    models[0]->set_position({ 4, 0, 4 });
-    models[1]->set_position({ 1, 2, 3 });
-    models[2]->set_position({ 1, 6, 3 });
-    models[3]->set_position({ 1, 15, 9 });
 
 	return Renderer(M{
         std::move(camera),
@@ -88,7 +71,11 @@ void Renderer::draw()
         model->invoke();
     }
 
+    bool options_opened = true;
+    Gui::draw_main_dockspace(&options_opened);
+    m.gui->draw_camera_controls_window();
     m.gui->render_scene(m.frame_buffer->get_texture(), m.camera);
+    m.gui->draw_models_control(m.models, m.camera);
 
     m.frame_buffer->revoke();
     m.gui->invoke_end();

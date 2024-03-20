@@ -3,7 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-Model Model::create(std::unique_ptr<Camera>& camera) 
+Model Model::create(std::unique_ptr<Camera>& camera, const std::string& model_name) 
 {
     const float vertices[] = {
         -1.0f,-1.0f,-1.0f, // triangle 1 : begin
@@ -74,10 +74,12 @@ Model Model::create(std::unique_ptr<Camera>& camera)
     });
 
     return Model(M{
+        .model_name = model_name,
         .shader = std::move(shader),
         .vertex_object = std::move(vertex_object),
         .uniform_object = std::move(uniform_object),
-        .model = model
+        .model = model,
+        .model_position = {0,0,0}
     });
 }
 
@@ -103,7 +105,8 @@ void Model::destroy() const
     m.vertex_object->destroy();
 }
 
-void Model::set_position(const glm::vec3& new_position) const
+void Model::set_position(const glm::vec3& new_position)
 {
-    *m.model = glm::translate(*m.model, new_position);
+    *m.model = glm::translate(glm::mat4(1.0f), new_position);
+    m.model_position = new_position;
 }
