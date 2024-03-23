@@ -13,7 +13,7 @@ private:
 	explicit VertexObject(M m) : m(std::move(m)) {}
 
 public:
-	static VertexObject create(const float vertices[], uint32_t vertices_count);
+	static VertexObject create(const float vertices[], const float textureCoords[], uint32_t vertices_count);
 
 	void invoke() const;
 	void destroy() const;

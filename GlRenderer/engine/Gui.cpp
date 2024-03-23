@@ -53,8 +53,6 @@ Gui Gui::create(GLFWwindow* window, std::unique_ptr<Camera>& camera)
 
     g_viewport_size = std::make_shared<ImVec2>(1920,1080);
 
-    std::shared_ptr<Camera::CameraControls> camera_view_controls = camera->get_camera_controls();
-    std::shared_ptr<Camera::ProjectionControls> camera_proj_controls = camera->get_proj_controls();
     std::shared_ptr<ImVec2> scene_viewport_size = g_viewport_size;
 
     Gui::enable_dark_theme();
@@ -66,7 +64,7 @@ Gui Gui::create(GLFWwindow* window, std::unique_ptr<Camera>& camera)
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 460");
-    return Gui(M{ window, camera_view_controls, camera_proj_controls, scene_viewport_size });
+    return Gui(M{ window, camera->get_camera_controls(), camera->get_proj_controls(), camera->get_view_controls(), scene_viewport_size });
 }
 
 void Gui::invoke_start() const
@@ -81,6 +79,8 @@ void Gui::draw_camera_controls_window() const
     ImGui::Begin("Camera Controls");
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
         1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    glm::vec3 camera_position = m.camera_view_controls->cameraPosition;
+    ImGui::Text("Camera Position. X: %.3f Y: %.3f Z: %.3f", camera_position.x, camera_position.y, camera_position.z);
     ImGui::SliderFloat("Camera Speed", &m.camera_controls->movementSpeed, 0.1f, 5.0f);
     ImGui::SliderFloat("Camera Sensitivity", &m.camera_controls->viewSensitivity, 0.01f, 0.3f);
     ImGui::SliderFloat("FOV", &m.camera_proj_controls->fov, 30.f, 120.f);
@@ -362,18 +362,22 @@ void Gui::draw_models_control(std::vector<std::unique_ptr<Model>> &models, std::
     std::string posYID = fmt::format("Y##{}", selectedModelIndex);
     std::string posZID = fmt::format("Z##{}", selectedModelIndex);
     
-    ImGui::SliderFloat(posXID.c_str(), &position.x, -100.f, 100.f);
+    ImGui::PushItemWidth(50); // Adjust the width as needed
+    ImGui::DragFloat(posXID.c_str(), &position.x, 0.5f);
     if (ImGui::IsItemEdited()) {
         selectedModel->set_position(position);
     }
-    ImGui::SliderFloat(posYID.c_str(), &position.y, -100.f, 100.f);
+    ImGui::SameLine();
+    ImGui::DragFloat(posYID.c_str(), &position.y, 0.5f);
     if (ImGui::IsItemEdited()) {
         selectedModel->set_position(position);
     }
-    ImGui::SliderFloat(posZID.c_str(), &position.z, -100.f, 100.f);
+    ImGui::SameLine();
+    ImGui::DragFloat(posZID.c_str(), &position.z, 0.5f);
     if (ImGui::IsItemEdited()) {
         selectedModel->set_position(position);
     }
+    ImGui::PopItemWidth();
     ImGui::Separator();
 
     if (ImGui::Button("Add Model"))

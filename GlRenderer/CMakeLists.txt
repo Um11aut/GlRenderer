@@ -22,7 +22,7 @@ ${IMGUI_SOURCE_DIR}/imgui_widgets.cpp
 ${GLAD_SOURCE_DIR}/../src/glad.c)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET GlRenderer PROPERTY CXX_STANDARD 20)
+  set_property(TARGET GlRenderer PROPERTY CXX_STANDARD 23)
 endif()
 
 find_package(fmt CONFIG REQUIRED)

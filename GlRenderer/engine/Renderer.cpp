@@ -13,11 +13,15 @@ Renderer Renderer::create(GLFWwindow* window)
 		glfwTerminate();
 	}
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glFrontFace(GL_CCW);
+
 	const char* version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 	spdlog::info("Loaded OpenGL with version: " + std::string(version));
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
 
     std::unique_ptr<Camera> camera = std::make_unique<Camera>(Camera::WithResultOf{
         []() {
@@ -26,15 +30,30 @@ Renderer Renderer::create(GLFWwindow* window)
     });
 
     std::unique_ptr<Gui> gui = std::make_unique<Gui>(Gui::WithResultOf{
-        [&]() {
+        [&window, &camera]() {
             return Gui::create(window, camera);
-         }
+        }
+    });
+
+    std::unique_ptr<CubeMap> cubemap = std::make_unique<CubeMap>(CubeMap::WithResultOf{
+        [&camera]() {
+            return CubeMap::create({
+                .right = "resources/textures/cubemap/negx.jpg",
+                .left = "resources/textures/cubemap/posx.jpg",
+                
+                .top = "resources/textures/cubemap/posy.jpg", // ok
+                .bottom = "resources/textures/cubemap/negy.jpg", // ok
+                
+                .front = "resources/textures/cubemap/negz.jpg",
+                .back = "resources/textures/cubemap/posz.jpg",
+            }, camera);
+        }
     });
 
     std::unique_ptr<FrameBuffer> frame_buffer = std::make_unique<FrameBuffer>(FrameBuffer::WithResultOf{
         [&gui]() {
             spdlog::info("Created with size: {} {}", gui->get_scene_viewport_size()->x, gui->get_scene_viewport_size()->y);
-            return FrameBuffer::create(gui->get_scene_viewport_size());
+            return FrameBuffer::create(gui->get_scene_viewport_size(), 1);
          }
     });
 
@@ -44,9 +63,12 @@ Renderer Renderer::create(GLFWwindow* window)
         return Model::create(camera, "Cube");
     })));
 
+    models[0]->set_position({ 1.f,-1.f,1.f });
+
 	return Renderer(M{
         std::move(camera),
         std::move(frame_buffer),
+        std::move(cubemap),
         std::move(gui),
         std::move(models)
 	});
@@ -64,12 +86,12 @@ void Renderer::draw()
     m.gui->invoke_start();
 
     m.frame_buffer->invoke();
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for(const auto& model : m.models) {
         model->invoke();
     }
+    m.cubemap->invoke();
 
     bool options_opened = true;
     Gui::draw_main_dockspace(&options_opened);

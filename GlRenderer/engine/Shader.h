@@ -23,10 +23,10 @@ public:
 	};
 
 	static Shader compile(ShaderModule&& module);
-	static Shader compile_single(const char* module, GLenum shader_type);
 
 	void invoke() const;
 
+	inline void set_uniform_i1(const std::string& location) const { glUniform1i(glGetUniformLocation(m.shaderProgram, location.c_str()), 0); }
 	inline const uint32_t get_program() const& { return m.shaderProgram; }
 
 	struct WithResultOf {

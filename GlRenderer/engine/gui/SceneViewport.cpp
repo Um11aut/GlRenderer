@@ -1,4 +1,6 @@
 #include "SceneViewport.h"
+#include <imgui_internal.h>
+#include <spdlog/spdlog.h>
 
 double m_width;
 double m_height;

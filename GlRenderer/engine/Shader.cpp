@@ -80,35 +80,6 @@ Shader Shader::compile(ShaderModule&& module)
 	return Shader(M{.shaderProgram = shaderProgram});
 }
 
-Shader Shader::compile_single(const char *module, GLenum shader_type)
-{
-    std::string string = open(module).value();
-
-	const char* content = string.c_str();
-
-	uint32_t shader = glCreateShader(shader_type);
-	glShaderSource(shader, 1, &content, nullptr);
-	glCompileShader(shader);
-
-	check(shader);
-
-	uint32_t shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, shader);
-	glLinkProgram(shaderProgram);
-
-	int success;
-	char infoLog[512];
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
-		spdlog::error("Shader program linking failed: \n{}", infoLog);
-	}
-
-	glDeleteShader(shader);
-
-	return Shader(M{.shaderProgram = shaderProgram});
-}
-
 void Shader::invoke() const
 {
 	glUseProgram(m.shaderProgram);

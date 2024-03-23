@@ -6,6 +6,7 @@
 #include "Shader.h"
 #include "VertexObject.h"
 #include "UniformObject.h"
+#include "Texture.h"
 #include <string>
 
 class Model {
@@ -13,6 +14,7 @@ private:
 	struct M {
 		std::string model_name;
 
+        std::unique_ptr<Texture> texture;
 		std::unique_ptr<Shader> shader;
         std::unique_ptr<VertexObject> vertex_object;
         std::unique_ptr<UniformObject> uniform_object;

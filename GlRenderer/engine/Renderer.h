@@ -14,6 +14,7 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_internal.h>
 #include "gui/SceneViewport.h"
+#include "CubeMap.h"
 #include "Model.h"
 
 class Renderer {
@@ -21,6 +22,7 @@ private:
 	struct M {
 		std::unique_ptr<Camera> camera;
 		std::unique_ptr<FrameBuffer> frame_buffer;
+		std::unique_ptr<CubeMap> cubemap;
 		std::unique_ptr<Gui> gui;
 		std::vector<std::unique_ptr<Model>> models;
 	} m;

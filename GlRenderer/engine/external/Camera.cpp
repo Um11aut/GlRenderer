@@ -35,8 +35,8 @@ Camera Camera::create()
 	};
 
 	CameraControls cam_controls{
-		.movementSpeed = 0.5f,
-		.viewSensitivity = 0.1f,
+		.movementSpeed = 0.1f,
+		.viewSensitivity = 0.05f,
 		.cameraAcceleration = 0.1f,
 		.yaw = -90.f,
 		.pitch = 0.f,
@@ -80,15 +80,15 @@ void Camera::process_input(GLFWwindow* window)
                                     (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS);
 
     // Calculate acceleration
+    auto delta_time = ImGui::GetIO().DeltaTime * 100.f;
+
     if (any_movement_key_pressed) {
         accelerating = true;
-        acceleration = std::min(acceleration + m.camera_controls->cameraAcceleration, 1.0f); // Accelerate
+        acceleration = std::min(acceleration + m.camera_controls->cameraAcceleration * delta_time, 1.0f); // Accelerate
     } else {
         accelerating = false;
-        acceleration = std::max(acceleration - m.camera_controls->cameraAcceleration, 0.0f); // Decelerate
+        acceleration = std::max(acceleration - m.camera_controls->cameraAcceleration * delta_time, 0.0f); // Decelerate
     }
-
-    auto delta_time = ImGui::GetIO().DeltaTime * 100.f;
 
     // Apply acceleration to movement
     float smooth_step = acceleration * acceleration * (3 - 2 * acceleration); // Smooth step function
@@ -124,9 +124,8 @@ void Camera::process_input(GLFWwindow* window)
 
 void Camera::rotate_camera(double& x_offset, double& y_offset)
 {
-	auto delta_time = ImGui::GetIO().DeltaTime * 100.f;
-	x_offset *= m.camera_controls->viewSensitivity * delta_time;
-	y_offset *= m.camera_controls->viewSensitivity * delta_time;
+	x_offset *= m.camera_controls->viewSensitivity;
+	y_offset *= m.camera_controls->viewSensitivity;
 
 	m.camera_controls->yaw -= static_cast<float>(x_offset);
 	m.camera_controls->pitch -= static_cast<float>(y_offset);
@@ -138,7 +137,8 @@ void Camera::rotate_camera(double& x_offset, double& y_offset)
 	front.x = glm::cos(glm::radians(m.camera_controls->yaw)) * glm::cos(glm::radians(m.camera_controls->pitch));
 	front.y = glm::sin(glm::radians(m.camera_controls->pitch));
 	front.z = glm::sin(glm::radians(m.camera_controls->yaw)) * glm::cos(glm::radians(m.camera_controls->pitch));
-	m.view_controls->cameraFront = glm::normalize(front);
+	auto delta_time = ImGui::GetIO().DeltaTime * 100.f;
+	m.view_controls->cameraFront = glm::normalize(front * delta_time);
 
 	update_view();
 }

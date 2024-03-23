@@ -29,7 +29,6 @@ private:
 	explicit UniformObject(M m) : m(std::move(m)) {}
 
 public:
-
 	struct Parameters {
 		std::shared_ptr<glm::mat4> model;
 		std::unique_ptr<Camera>& camera;
@@ -44,7 +43,6 @@ public:
 	void update();
 
 	void revoke();
-	void destroy() const;
 
 	struct WithResultOf {
 		std::function<UniformObject()> func;

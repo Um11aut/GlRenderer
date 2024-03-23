@@ -1,5 +1,11 @@
 #include "Window.h"
 
+static Renderer* renderer_ptr;
+
+static void window_size_callback(GLFWwindow* window, int width, int height) {
+	renderer_ptr->draw();
+	glfwSwapBuffers(window);
+}
 
 Window::Window(Window&& other) noexcept
 {
@@ -8,12 +14,15 @@ Window::Window(Window&& other) noexcept
 
 void Window::run_loop()
 {
-	while (!glfwWindowShouldClose(m.window)) {
-		glfwPollEvents();
+	renderer_ptr = m.renderer.get();
+	glfwSetWindowSizeCallback(m.window, window_size_callback);
 
+	while (!glfwWindowShouldClose(m.window)) {
 		m.renderer->draw();
 
 		glfwSwapBuffers(m.window);
+		
+		glfwPollEvents();
 	}
 }
 
@@ -31,11 +40,7 @@ Window Window::create(WndConstruct&& parameters)
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
-	glfwWindowHint(GLFW_DEPTH_BITS, GL_TRUE);
-
-	int numMonitors;
-	GLFWmonitor** monitors = glfwGetMonitors(&numMonitors);
-	GLFWmonitor* monitor = monitors[0];
+	glfwWindowHint(GLFW_DEPTH_BITS, 24);
 
 	GLFWwindow* window = glfwCreateWindow(
 		parameters.width,

@@ -15,6 +15,7 @@ private:
 		GLFWwindow* window;
 		std::shared_ptr<Camera::CameraControls> camera_controls;
 		std::shared_ptr<Camera::ProjectionControls> camera_proj_controls;
+		std::shared_ptr<Camera::ViewControls> camera_view_controls;
 		std::shared_ptr<ImVec2> scene_viewport_size;
 	} m;
 
