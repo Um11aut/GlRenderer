@@ -46,7 +46,7 @@ Renderer Renderer::create(GLFWwindow* window)
                 
                 .front = "resources/textures/cubemap/negz.jpg",
                 .back = "resources/textures/cubemap/posz.jpg",
-            }, camera);
+            }, camera, "map");
         }
     });
 
@@ -57,20 +57,36 @@ Renderer Renderer::create(GLFWwindow* window)
          }
     });
 
-    std::vector<std::unique_ptr<Model>> models;
+    std::vector<std::unique_ptr<Entity>> entities;
 
-    models.emplace_back(std::make_unique<Model>(Model::WithResultOf([&camera](){
-        return Model::create(camera, "Cube");
-    })));
+    entities.push_back(std::make_unique<Model>(
+            Model::WithResultOf([&camera](){
+                return Model::create(camera, "Main Cube");
+            })
+        )
+    );
 
-    models[0]->set_position({ 1.f,-1.f,1.f });
+    entities.push_back(std::make_unique<CubeMap>(
+            CubeMap::WithResultOf{[&camera]() {
+                return CubeMap::create({
+                    .right = "resources/textures/cubemap/negx.jpg",
+                    .left = "resources/textures/cubemap/posx.jpg",
+                    
+                    .top = "resources/textures/cubemap/posy.jpg", // ok
+                    .bottom = "resources/textures/cubemap/negy.jpg", // ok
+                    
+                    .front = "resources/textures/cubemap/negz.jpg",
+                    .back = "resources/textures/cubemap/posz.jpg",
+                }, camera, "CubeMap");
+            }}
+        )
+    );
 
 	return Renderer(M{
         std::move(camera),
         std::move(frame_buffer),
-        std::move(cubemap),
         std::move(gui),
-        std::move(models)
+        std::move(entities)
 	});
 }
 
@@ -88,16 +104,16 @@ void Renderer::draw()
     m.frame_buffer->invoke();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    for(const auto& model : m.models) {
-        model->invoke();
+    for(const auto& entity : m.entities) {
+        entity->invoke();
     }
-    m.cubemap->invoke();
 
     bool options_opened = true;
     Gui::draw_main_dockspace(&options_opened);
     m.gui->draw_camera_controls_window();
     m.gui->render_scene(m.frame_buffer->get_texture(), m.camera);
-    m.gui->draw_models_control(m.models, m.camera);
+    Ui::draw_scene_entities_controls(m.entities, m.camera);
+    // m.gui->draw_models_control(m.models, m.camera);
 
     m.frame_buffer->revoke();
     m.gui->invoke_end();
@@ -109,9 +125,9 @@ void Renderer::destroy() const
 {
 	spdlog::info("Renderer destructed!");
 	
-    for(const auto& model : m.models) {
-        model->destroy();
-    }
+    // for(const auto& model : m.entities) {
+    //     model->destroy();
+    // }
 
     m.gui->destroy();
     m.frame_buffer->destroy();

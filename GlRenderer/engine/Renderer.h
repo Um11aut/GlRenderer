@@ -16,15 +16,16 @@
 #include "gui/SceneViewport.h"
 #include "CubeMap.h"
 #include "Model.h"
+#include "gui/SceneHierarchy.h"
 
 class Renderer {
 private:
 	struct M {
 		std::unique_ptr<Camera> camera;
 		std::unique_ptr<FrameBuffer> frame_buffer;
-		std::unique_ptr<CubeMap> cubemap;
 		std::unique_ptr<Gui> gui;
-		std::vector<std::unique_ptr<Model>> models;
+
+		std::vector<std::unique_ptr<Entity>> entities;
 	} m;
 
 	explicit Renderer(M m) : m(std::move(m)) {}

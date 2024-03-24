@@ -5,6 +5,7 @@
         "spdlog",
         "glad",
         "opengl",
-        "glm"
+        "glm",
+        "entt"
     ]
 }

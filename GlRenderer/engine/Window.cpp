@@ -15,7 +15,10 @@ Window::Window(Window&& other) noexcept
 void Window::run_loop()
 {
 	renderer_ptr = m.renderer.get();
+	
+	#ifdef _WIN32
 	glfwSetWindowSizeCallback(m.window, window_size_callback);
+	#endif
 
 	while (!glfwWindowShouldClose(m.window)) {
 		m.renderer->draw();

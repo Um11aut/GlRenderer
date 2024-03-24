@@ -6,8 +6,9 @@
 #include "Shader.h"
 #include "external/Camera.h"
 #include "Texture.h"
+#include "Entity.h"
 
-class CubeMap {
+class CubeMap : public Entity {
 private:
 	static constexpr float skybox_vertices[] = {
         -1.0f,  1.0f, -1.0f,
@@ -63,6 +64,7 @@ private:
 		uint32_t ubo;
         uint32_t vao;
         CubeMapUBO vp;
+        std::string name;
 	} m;
 
     explicit CubeMap(M m) : m(std::move(m)) {}
@@ -78,9 +80,11 @@ public:
 		std::string back;
 	};
 
-	static CubeMap create(Textures&& textures, std::unique_ptr<Camera>& camera);
+	static CubeMap create(Textures&& textures, std::unique_ptr<Camera>& camera, const std::string& name);
 
-	void invoke() const;
+	void invoke() const override;
+
+    inline std::string get_name() const override { return m.name; }
 
     struct WithResultOf {
         std::function<CubeMap()> func;

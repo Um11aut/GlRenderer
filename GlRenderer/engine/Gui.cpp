@@ -339,7 +339,7 @@ void Gui::draw_models_control(std::vector<std::unique_ptr<Model>> &models, std::
         for (size_t i = 0; i < models.size(); ++i)
         {
             bool isSelected = (selectedModelIndex == i);
-            auto& model_name = models[i]->get_name();
+            std::string model_name = models[i]->get_name();
             if (ImGui::Selectable(fmt::format("{}##{}", model_name, i + 1).c_str(), isSelected))
             {
                 selectedModelIndex = static_cast<int>(i); // Set the selected model index

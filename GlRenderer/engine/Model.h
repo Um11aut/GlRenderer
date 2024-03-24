@@ -7,9 +7,10 @@
 #include "VertexObject.h"
 #include "UniformObject.h"
 #include "Texture.h"
+#include "Entity.h"
 #include <string>
 
-class Model {
+class Model : public Entity {
 private:
 	struct M {
 		std::string model_name;
@@ -27,12 +28,12 @@ private:
 public:
 	static Model create(std::unique_ptr<Camera>& camera, const std::string& model_name);
 
-    void invoke() const;
+    void invoke() const override;
 	void destroy() const;
 
     void set_position(const glm::vec3& new_position);
 	inline const glm::vec3 get_position() const { return m.model_position; }
-	inline const std::string get_name() const { return m.model_name; }
+	inline std::string get_name() const override { return m.model_name; }
 
 	struct WithResultOf {
 		std::function<Model()> func;

@@ -5,7 +5,7 @@
 
 Camera* g_camera = nullptr;
 
-CubeMap CubeMap::create(Textures&& textures, std::unique_ptr<Camera>& camera)
+CubeMap CubeMap::create(Textures&& textures, std::unique_ptr<Camera>& camera, const std::string& name)
 {
 	std::vector<std::string> faces = {textures.right, textures.left, textures.top, textures.bottom, textures.front, textures.back};
 
@@ -73,7 +73,8 @@ CubeMap CubeMap::create(Textures&& textures, std::unique_ptr<Camera>& camera)
 		texture_id,
 		0,
 		VAO, 
-		ubo_struct
+		ubo_struct,
+		name
 	});
 }
 
