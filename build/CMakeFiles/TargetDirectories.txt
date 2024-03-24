@@ -1,5 +1,0 @@
-/home/umlaut/GlRenderer/build/CMakeFiles/edit_cache.dir
-/home/umlaut/GlRenderer/build/CMakeFiles/rebuild_cache.dir
-/home/umlaut/GlRenderer/build/GlRenderer/CMakeFiles/GlRenderer.dir
-/home/umlaut/GlRenderer/build/GlRenderer/CMakeFiles/edit_cache.dir
-/home/umlaut/GlRenderer/build/GlRenderer/CMakeFiles/rebuild_cache.dir
