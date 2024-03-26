@@ -6,14 +6,11 @@
 #include <iostream>
 
 int main() {
-	auto first = std::thread([](){
-		Window window1 = Window::create({
-		.width = 1920,
-		.height = 1080,
-		.name = "Main Renderer"
-			});
+	Window window1 = Window::create({
+	.width = 1920,
+	.height = 1080,
+	.name = "Main Renderer"
+		});
 
-		window1.run_loop(); 
-	});
-	first.join();
+	window1.run_loop(); 
 }

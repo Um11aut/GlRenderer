@@ -1,88 +1,58 @@
 #include "Model.h"
 
-Model Model::create(std::unique_ptr<Camera>& camera, const std::string& model_name) 
+std::vector<float> g_vertices;
+std::vector<uint32_t> g_indices;
+std::vector<float> g_texture_coords;
+
+static void process_mesh(aiMesh* mesh, const aiScene* scene) {
+    spdlog::info("Loading mesh with {} number of vertices", mesh->mNumVertices);
+
+    for (size_t i = 0; i < mesh->mNumVertices; ++i) {
+        aiVector3D vertex = mesh->mVertices[i];
+        g_vertices.push_back(vertex.x);
+        g_vertices.push_back(vertex.y);
+        g_vertices.push_back(vertex.z);
+
+        if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
+        {
+            g_texture_coords.push_back(mesh->mTextureCoords[0][i].x);
+            g_texture_coords.push_back(mesh->mTextureCoords[0][i].y);
+        }
+        else
+            g_texture_coords.push_back(0.f), g_texture_coords.push_back(0.f);
+    }
+
+    for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+    {
+        aiFace face = mesh->mFaces[i];
+        for (unsigned int j = 0; j < face.mNumIndices; j++)
+            g_indices.push_back(face.mIndices[j]);
+    }
+}
+
+static void process_node(aiNode* node, const aiScene* scene) {
+    for (size_t i = 0; i < node->mNumMeshes; ++i) {
+        aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+        process_mesh(mesh, scene);
+    }
+    for (size_t i = 0; i < node->mNumChildren; i++)
+    {
+        process_node(node->mChildren[i], scene);
+    }
+}
+
+Model Model::create(ModelCreateInfo info)
 {
-    const float vertices[] = {
-        -1.0f,  1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(info.path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
-        -1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-
-        -1.0f, -1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-
-        -1.0f,  1.0f, -1.0f,
-         1.0f,  1.0f, -1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f, -1.0f,
-
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-         1.0f, -1.0f,  1.0f
-    };
-
-    const float textureCoords[] = {
-        // Front face
-        0.0f, 0.0f,
-        0.0f, 1.0f,
-        1.0f, 1.0f,
-        1.0f, 0.0f,
-        
-        // Back face
-        0.0f, 0.0f,
-        0.0f, 1.0f,
-        1.0f, 1.0f,
-        1.0f, 0.0f,
-        
-        // Top face
-        0.0f, 0.0f,
-        0.0f, 1.0f,
-        1.0f, 1.0f,
-        1.0f, 0.0f,
-        
-        // Bottom face
-        0.0f, 0.0f,
-        0.0f, 1.0f,
-        1.0f, 1.0f,
-        1.0f, 0.0f,
-        
-        // Right face
-        0.0f, 0.0f,
-        0.0f, 1.0f,
-        1.0f, 1.0f,
-        1.0f, 0.0f,
-        
-        // Left face
-        0.0f, 0.0f,
-        0.0f, 1.0f,
-        1.0f, 1.0f,
-        1.0f, 0.0f
-    };
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+    {
+        spdlog::error("Error using Assimp: {}", importer.GetErrorString());
+    }
+    else {
+        process_node(scene->mRootNode, scene);
+    }
 
     std::unique_ptr<Shader> shader = std::make_unique<Shader>(Shader::WithResultOf{ 
         []() {
@@ -99,19 +69,30 @@ Model Model::create(std::unique_ptr<Camera>& camera, const std::string& model_na
         }
     });
 
+    spdlog::info("Model with {} size!", g_vertices.size());
+
     std::unique_ptr<VertexObject> vertex_object = std::make_unique<VertexObject>(VertexObject::WithResultOf{ 
-        [&vertices, &textureCoords]() {
-            return VertexObject::create(vertices, textureCoords, sizeof(vertices) / sizeof(vertices[0]));
+        [&]() {
+            return VertexObject::create({
+                .vertices = g_vertices,
+                .textureCoords = g_texture_coords,
+                .indices = g_indices,
+                .vertices_count = static_cast<uint32_t>(g_vertices.size()),
+                .indices_count = static_cast<uint32_t>(g_indices.size()),
+                .texture_coords_count = static_cast<uint32_t>(g_texture_coords.size())
+            });
         }
     });
 
     std::shared_ptr<glm::mat4> model = std::make_shared<glm::mat4>(0.5f);
 
+    auto& cam = info.camera.get();
+
     std::unique_ptr<UniformObject> uniform_object = std::make_unique<UniformObject>(UniformObject::WithResultOf{
-        [&shader, &camera, &model]() {
+        [&shader, &cam, &model]() {
             return UniformObject::create(UniformObject::Parameters{
                 model,
-                camera,
+                cam,
                 shader->get_program(),
                 0
             });
@@ -122,7 +103,7 @@ Model Model::create(std::unique_ptr<Camera>& camera, const std::string& model_na
     shader->set_uniform_i1("txt");
 
     return Model(M{
-        .model_name = model_name,
+        .model_name = info.name,
         .texture = std::move(texture),
         .shader = std::move(shader),
         .vertex_object = std::move(vertex_object),

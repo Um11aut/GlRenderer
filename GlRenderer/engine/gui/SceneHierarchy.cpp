@@ -39,7 +39,7 @@ void Ui::draw_scene_entities_controls(std::vector<std::unique_ptr<Entity>>& enti
             if (ImGui::Button("Add") && strlen(modelName) > 0) // Check if name field is not empty
             {
                 entities.emplace_back(std::make_unique<Model>(Model::WithResultOf([&camera](){
-                    return Model::create(camera, modelName);
+                    return Model::create({ camera, modelName, modelName});
                 })));
                 
                 memset(modelName, 0, sizeof(modelName));

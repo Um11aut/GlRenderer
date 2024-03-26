@@ -8,10 +8,20 @@
 #include "UniformObject.h"
 #include "Texture.h"
 #include "Entity.h"
+#include "util/Ref.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #include <string>
 
 class Model : public Entity {
 private:
+	struct ModelLoaderParameters {
+		const aiScene* scene;
+		aiNode* node;
+		aiMesh* mesh;
+	};
+
 	struct M {
 		std::string model_name;
 
@@ -20,13 +30,21 @@ private:
         std::unique_ptr<VertexObject> vertex_object;
         std::unique_ptr<UniformObject> uniform_object;
 
+		ModelLoaderParameters model_parameters;
+
         std::shared_ptr<glm::mat4> model;
 		glm::vec3 model_position;
 	} m;
 
 	explicit Model(M m) : m(std::move(m)) {}
 public:
-	static Model create(std::unique_ptr<Camera>& camera, const std::string& model_name);
+	struct ModelCreateInfo {
+		Ref<std::unique_ptr<Camera>> camera;
+		const std::string& name;
+		const std::string& path;
+	};
+
+	static Model create(ModelCreateInfo info);
 
     void invoke() const override;
 	void destroy() const;

@@ -35,21 +35,6 @@ Renderer Renderer::create(GLFWwindow* window)
         }
     });
 
-    std::unique_ptr<CubeMap> cubemap = std::make_unique<CubeMap>(CubeMap::WithResultOf{
-        [&camera]() {
-            return CubeMap::create({
-                .right = "resources/textures/cubemap/negx.jpg",
-                .left = "resources/textures/cubemap/posx.jpg",
-                
-                .top = "resources/textures/cubemap/posy.jpg", // ok
-                .bottom = "resources/textures/cubemap/negy.jpg", // ok
-                
-                .front = "resources/textures/cubemap/negz.jpg",
-                .back = "resources/textures/cubemap/posz.jpg",
-            }, camera, "map");
-        }
-    });
-
     std::unique_ptr<FrameBuffer> frame_buffer = std::make_unique<FrameBuffer>(FrameBuffer::WithResultOf{
         [&gui]() {
             spdlog::info("Created with size: {} {}", gui->get_scene_viewport_size()->x, gui->get_scene_viewport_size()->y);
@@ -61,7 +46,11 @@ Renderer Renderer::create(GLFWwindow* window)
 
     entities.push_back(std::make_unique<Model>(
             Model::WithResultOf([&camera](){
-                return Model::create(camera, "Main Cube");
+            return Model::create({
+                        camera,
+                        "Cube",
+                        "resources/models/Sponza.fbx"
+                    });
             })
         )
     );
@@ -69,14 +58,14 @@ Renderer Renderer::create(GLFWwindow* window)
     entities.push_back(std::make_unique<CubeMap>(
             CubeMap::WithResultOf{[&camera]() {
                 return CubeMap::create({
-                    .right = "resources/textures/cubemap/negx.jpg",
-                    .left = "resources/textures/cubemap/posx.jpg",
+                    .right = "resources/textures/cubemap/px.png",
+                    .left = "resources/textures/cubemap/nx.png",
                     
-                    .top = "resources/textures/cubemap/posy.jpg", // ok
-                    .bottom = "resources/textures/cubemap/negy.jpg", // ok
+                    .top = "resources/textures/cubemap/py.png", // ok
+                    .bottom = "resources/textures/cubemap/ny.png", // ok
                     
-                    .front = "resources/textures/cubemap/negz.jpg",
-                    .back = "resources/textures/cubemap/posz.jpg",
+                    .front = "resources/textures/cubemap/pz.png",
+                    .back = "resources/textures/cubemap/nz.png",
                 }, camera, "CubeMap");
             }}
         )
@@ -118,7 +107,7 @@ void Renderer::draw()
     m.frame_buffer->revoke();
     m.gui->invoke_end();
 
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 }
 
 void Renderer::destroy() const

@@ -6,6 +6,7 @@
         "glad",
         "opengl",
         "glm",
-        "entt"
+        "entt",
+        "assimp"
     ]
 }

@@ -21,12 +21,21 @@ CubeMap CubeMap::create(Textures&& textures, std::unique_ptr<Camera>& camera, co
 
 	int width, height, num_channels;
 	for (uint32_t i = 0; i < faces.size(); ++i) {
-		uint8_t* data = stbi_load(faces[i].c_str(), &width, &height, &num_channels, 0);
+		uint8_t* data = stbi_load(faces[i].c_str(), &width, &height, &num_channels, STBI_rgb_alpha);
 		if (data)
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-				0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
-			);
+			if (num_channels == 3) {
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+					0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+				);
+			}
+
+			if (num_channels == 4) {
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+					0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data
+				);
+			}
+			
 			stbi_image_free(data);
 		}
 		else {
